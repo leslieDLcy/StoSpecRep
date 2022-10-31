@@ -85,4 +85,3 @@ class CWTx():
                 ax.set_xlabel('time (s)')
                 ax.set_ylabel('frequency (Hz)')
                 ax.set_zlabel('PSD')
-                # ax.set_ylim([0, 20])

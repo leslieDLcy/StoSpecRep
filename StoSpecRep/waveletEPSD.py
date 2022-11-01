@@ -3,6 +3,7 @@ import pywt
 import numpy as np
 import matplotlib.pyplot as plt
 from .console import console
+from .SpecRepMethod import SRM_formula
 
 
 
@@ -47,19 +48,22 @@ class CWTx():
 
     def check_scales(self, a, b, num):
         checked_scales = np.logspace(start=a, stop=b, num=num,  base=2, endpoint=True)
-        console.print(f'scales_range({checked_scales[0]}, {checked_scales[-1]}) ==> {self.freqhelper(checked_scales)}')
+        console.print(f'(a={a},b={b}) ==> scales_range({checked_scales[0]}, {checked_scales[-1]}) ==> {self.freqhelper(checked_scales)}')
 
 
 
     def propose_scales(self, a, b, num):
         self._proposed_scales = np.logspace(start=a, stop=b, num=num,  base=2, endpoint=True)
+        console.print("You've proposed scales:")
+        self.check_scales(a, b, num)
 
 
+    def computeEPSD(self):
+        ''' Compute EPSD by wavelet using `self._proposed_scales` '''
 
-    def computeEPSD(self, chosen_scales):
         coef, self._freqs = pywt.cwt(
                         data=self.signal, 
-                        scales=chosen_scales, 
+                        scales=self._proposed_scales, 
                         wavelet='morl', 
                         sampling_period=self.dt)
         self._pwr_coef = np.square(np.abs(coef)) * 2 * self.dt
@@ -72,7 +76,7 @@ class CWTx():
             if option == '2d':
                 fig, ax =plt.subplots()
                 im = ax.pcolormesh(self.t_axis, self._freqs, self._pwr_coef, cmap='BuPu', shading='gouraud')
-                ax.set_ylim([0, 20])
+                # ax.set_ylim([0, 20])
                 ax.set_xlabel("time")
                 ax.set_ylabel("freq")
                 plt.colorbar(im)
@@ -85,3 +89,17 @@ class CWTx():
                 ax.set_xlabel('time (s)')
                 ax.set_ylabel('frequency (Hz)')
                 ax.set_zlabel('PSD')
+
+
+    ##### SRM part #####
+    def g_a_SRMsimu(self,):
+        trial_simulation = SRM_formula(
+            Stw=self._pwr_coef, 
+            f_vec=self._freqs, 
+            t_vec=self.t_axis)
+        return trial_simulation
+
+
+    def g_ensemble_simus(self, ensemble_size):
+        ensemble_list = [self.g_a_SRMsimu() for i in range(ensemble_size)]
+        return np.vstack(ensemble_list)

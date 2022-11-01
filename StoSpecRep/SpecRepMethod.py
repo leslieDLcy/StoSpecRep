@@ -10,10 +10,40 @@ import itertools
 import pandas as pd
 from scipy import interpolate
 from scipy.interpolate import griddata
-from utils import EPSD_show
+from .utils import EPSD_show
 
 # from KT_model import parameterized_KT_model, Envelop_tfunc1, nonsta_model
 # np.random.seed(9527)
+
+
+
+    # alright, let's write up a general function that takes (Stw, w, t)
+ 
+def SRM_formula(Stw, f_vec, t_vec):
+    """ Redo the SRM based on a computed wavelet EPSD 
+    
+    Hint: 
+    ----
+    Swt    --> obj._pwr_coef.shape
+    f_vec  --> obj._freqs
+    t_vec  --> obj.t_axis
+    """
+    
+    # entry
+    N1 = len(f_vec)
+    w_vec = 2 * np.pi * f_vec
+    phi_n = np.random.uniform(0, 2 * np.pi, N1)
+    delta_f = np.abs(np.append(arr=np.diff(f_vec),  values=np.diff(f_vec)[-1]))
+    delta_w  = 2 * np.pi * delta_f
+    
+    # main course
+    sum = 0
+    for i in range(1, N1):
+        sum = sum + np.sqrt(4 * Stw[i] * delta_w[i]) * np.cos(w_vec[i] * t_vec + phi_n[i])
+    
+    # compensate for the two-sided into one-sided
+    simulation = sum / 4
+    return simulation
 
 
 class SRM:

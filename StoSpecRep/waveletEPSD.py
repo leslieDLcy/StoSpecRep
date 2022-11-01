@@ -68,6 +68,9 @@ class CWTx():
                         sampling_period=self.dt)
         self._pwr_coef = np.square(np.abs(coef)) * 2 * self.dt
 
+        console.print("Yo! Computing EPSD with the proposed scales")
+        console.print(f"Swt shape: {self._pwr_coef.shape}")
+
 
 
     def plot_waveletEPSD(self, option='3d'):
@@ -91,31 +94,22 @@ class CWTx():
                 ax.set_zlabel('PSD')
 
 
-    def plot_3dEPSD(self, option='3d'):
+    def plot_3dEPSD(self, *, x_low, x_high, y_low, y_high):
             """ Plot the computed EPSD by wavelet transform of a certain range """
             
-            if option == '2d':
-                fig, ax =plt.subplots()
-                im = ax.pcolormesh(self.t_axis, self._freqs, self._pwr_coef, cmap='BuPu', shading='gouraud')
-                ax.set_xlabel("time")
-                ax.set_ylabel("freq")
-                plt.colorbar(im)
-            elif option == '3d':
-                fig = plt.figure(figsize=(8,8))
-                ax = plt.axes(projection='3d')
-                X, Y = np.meshgrid(self.t_axis, self._freqs)
-                Z = self._pwr_coef
-
-                # a workaround to set up the range
-                Z = np.where((X > 0) & (X < 14), Z, None)
-                Z = np.where((Y > 0) & (Y < 5), Z, None)
-
-                ax.plot_surface(X, Y, Z, cmap='coolwarm')
-                ax.set_xlabel('time (s)')
-                ax.set_ylabel('frequency (Hz)')
-                ax.set_zlabel('PSD')
-                ax.set_xlim3d(left=0, right=14)
-                ax.set_ylim(bottom=0, top=5)
+            fig = plt.figure(figsize=(8,8))
+            ax = plt.axes(projection='3d')
+            X, Y = np.meshgrid(self.t_axis, self._freqs)
+            Z = self._pwr_coef
+            # a workaround to set up the range
+            Z = np.where((X > x_low) & (X < x_high), Z, None)
+            Z = np.where((Y > y_low) & (Y < y_high), Z, None)
+            ax.plot_surface(X, Y, Z, cmap='coolwarm')
+            ax.set_xlabel('time (s)')
+            ax.set_ylabel('frequency (Hz)')
+            ax.set_zlabel('PSD')
+            ax.set_xlim3d(left=x_low, right=x_high)
+            ax.set_ylim(bottom=y_low, top=y_high)
 
 
 

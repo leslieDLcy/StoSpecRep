@@ -17,7 +17,11 @@ class CWTx():
         self.signal = signal
         self.t_axis = t_axis
 
-    goto_scales = np.logspace(start=2, stop=10, num=30,  base=2, endpoint=True)
+    @property
+    def goto_scales(self,):
+        _goto_scales = np.logspace(start=2, stop=10, num=30,  base=2, endpoint=True)
+        console.print(f'(a={2},b={10}) ==> scales_range({_goto_scales[0]}, {_goto_scales[-1]}) ==> {self.freqhelper(_goto_scales)}')
+        return _goto_scales
 
 
     def scale2freq(self, scales):

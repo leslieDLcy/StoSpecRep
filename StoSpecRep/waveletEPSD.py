@@ -88,7 +88,7 @@ class CWTx():
                         shading='gouraud',
                         rasterized=True)
                 ax.set_xlabel("time")
-                ax.set_ylabel("freq")
+                ax.set_ylabel("frequency (Hz)")
                 plt.colorbar(im)
             elif option == '3d':
                 fig = plt.figure(figsize=(8,8))

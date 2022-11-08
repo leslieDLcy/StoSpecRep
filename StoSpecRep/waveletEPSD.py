@@ -82,8 +82,11 @@ class CWTx():
             
             if option == '2d':
                 fig, ax =plt.subplots()
-                im = ax.pcolormesh(self.t_axis, self._freqs, self._pwr_coef, cmap='BuPu', shading='gouraud')
-                # ax.set_ylim([0, 20])
+                im = ax.pcolormesh(
+                        self.t_axis, self._freqs, self._pwr_coef, 
+                        cmap='BuPu', 
+                        shading='gouraud',
+                        rasterized=True)
                 ax.set_xlabel("time")
                 ax.set_ylabel("freq")
                 plt.colorbar(im)

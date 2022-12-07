@@ -78,45 +78,45 @@ class CWTx():
 
 
     def plot_waveletEPSD(self, option='3d'):
-            """ Plot the computed EPSD by wavelet transform """
+        """ Plot the computed EPSD by wavelet transform """
             
-            if option == '2d':
-                fig, ax =plt.subplots()
-                im = ax.pcolormesh(
-                        self.t_axis, self._freqs, self._pwr_coef, 
-                        cmap='BuPu', 
-                        shading='gouraud',
-                        rasterized=True)
-                ax.set_xlabel("time")
-                ax.set_ylabel("frequency (Hz)")
-                plt.colorbar(im)
-            elif option == '3d':
-                fig = plt.figure(figsize=(8,8))
-                ax = plt.axes(projection='3d')
-                X, Y = np.meshgrid(self.t_axis, self._freqs)
-                Z = self._pwr_coef
-                ax.plot_surface(X, Y, Z, cmap='coolwarm')
-                ax.set_xlabel('time (s)')
-                ax.set_ylabel('frequency (Hz)')
-                ax.set_zlabel('PSD')
-
-
-    def plot_3dEPSD(self, *, x_low, x_high, y_low, y_high):
-            """ Plot the computed EPSD by wavelet transform of a certain range """
-            
+        if option == '2d':
+            fig, ax =plt.subplots()
+            im = ax.pcolormesh(
+                    self.t_axis, self._freqs, self._pwr_coef, 
+                    cmap='BuPu', 
+                    shading='gouraud',
+                    rasterized=True)
+            ax.set_xlabel("time")
+            ax.set_ylabel("frequency (Hz)")
+            plt.colorbar(im)
+        elif option == '3d':
             fig = plt.figure(figsize=(8,8))
             ax = plt.axes(projection='3d')
             X, Y = np.meshgrid(self.t_axis, self._freqs)
             Z = self._pwr_coef
-            # a workaround to set up the range
-            Z = np.where((X > x_low) & (X < x_high), Z, None)
-            Z = np.where((Y > y_low) & (Y < y_high), Z, None)
             ax.plot_surface(X, Y, Z, cmap='coolwarm')
             ax.set_xlabel('time (s)')
             ax.set_ylabel('frequency (Hz)')
             ax.set_zlabel('PSD')
-            ax.set_xlim3d(left=x_low, right=x_high)
-            ax.set_ylim(bottom=y_low, top=y_high)
+
+
+    def plot_3dEPSD(self, *, x_low, x_high, y_low, y_high):
+        """ Plot the computed EPSD by wavelet transform of a certain range """
+
+        fig = plt.figure()
+        ax = plt.axes(projection='3d')
+        X, Y = np.meshgrid(self.t_axis, self._freqs)
+        Z = self._pwr_coef
+        # a workaround to set up the range
+        Z = np.where((X > x_low) & (X < x_high), Z, None)
+        Z = np.where((Y > y_low) & (Y < y_high), Z, None)
+        ax.plot_surface(X, Y, Z, cmap='coolwarm')
+        ax.set_xlabel('time (s)')
+        ax.set_ylabel('frequency (Hz)')
+        ax.set_zlabel('PSD')
+        ax.set_xlim3d(left=x_low, right=x_high)
+        ax.set_ylim(bottom=y_low, top=y_high)
 
 
 

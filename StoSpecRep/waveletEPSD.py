@@ -104,7 +104,7 @@ class CWTx():
     def plot_3dEPSD(self, *, x_low, x_high, y_low, y_high):
         """ Plot the computed EPSD by wavelet transform of a certain range """
 
-        fig = plt.figure()
+        fig = plt.figure(figsize=(8, 8))
         ax = plt.axes(projection='3d')
         X, Y = np.meshgrid(self.t_axis, self._freqs)
         Z = self._pwr_coef

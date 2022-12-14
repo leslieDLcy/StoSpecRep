@@ -2,6 +2,7 @@ from collections import namedtuple
 import pywt
 import numpy as np
 import matplotlib.pyplot as plt
+from functools import partial
 from .console import console
 from .SpecRepMethod import SRM_formula
 
@@ -62,18 +63,45 @@ class CWTx():
         self.check_scales(a, b, num)
 
 
-    def computeEPSD(self):
-        ''' Compute EPSD by wavelet using `self._proposed_scales` '''
+    def computeEPSD(self, externaldata=None):
+        ''' Compute EPSD by wavelet using `self._proposed_scales` 
+        
+        By default, in computes the EPSD from `self.signal`, which is 
+        desired in most cases. Given a signal, construct an object and compute the EPSD.
+        But from some special uses, we may think the `self.signal` as target and try to compare 
+        it with that of some external data, eg. reconstructions.
+        
+        '''
 
-        coef, self._freqs = pywt.cwt(
+        if externaldata is not None:
+            console.print("Yo! Computing EPSD of external data with the proposed scales")
+            
+            EPSD_container = []
+            for row in externaldata:
+                coef, freqs = pywt.cwt(
+                    data=row, 
+                    scales=self._proposed_scales, 
+                    wavelet='morl', 
+                    sampling_period=self.dt)
+                EPSD_pwr_coef = np.square(np.abs(coef)) * 2 * self.dt
+                EPSD_container.append(EPSD_pwr_coef)
+            EPSD_container = np.stack(EPSD_container, axis=0)
+            EPSD_mean = np.mean(EPSD_container, axis=0)
+            # return the bundle    
+            return EPSD_mean, freqs, self.t_axis
+        else:
+            coef, self._freqs = pywt.cwt(
                         data=self.signal, 
                         scales=self._proposed_scales, 
                         wavelet='morl', 
                         sampling_period=self.dt)
-        self._pwr_coef = np.square(np.abs(coef)) * 2 * self.dt
+            self._pwr_coef = np.square(np.abs(coef)) * 2 * self.dt
+            
+            console.print("Yo! Computing EPSD with the proposed scales")
+            console.print(f"Swt shape: {self._pwr_coef.shape}")
 
-        console.print("Yo! Computing EPSD with the proposed scales")
-        console.print(f"Swt shape: {self._pwr_coef.shape}")
+
+
 
 
 
@@ -87,8 +115,8 @@ class CWTx():
                     cmap='BuPu', 
                     shading='gouraud',
                     rasterized=True)
-            ax.set_xlabel("time")
-            ax.set_ylabel("frequency (Hz)")
+            ax.set_xlabel("Time")
+            ax.set_ylabel("Frequency (Hz)")
             plt.colorbar(im)
         elif option == '3d':
             fig = plt.figure(figsize=(8,8))
@@ -96,8 +124,8 @@ class CWTx():
             X, Y = np.meshgrid(self.t_axis, self._freqs)
             Z = self._pwr_coef
             ax.plot_surface(X, Y, Z, cmap='coolwarm')
-            ax.set_xlabel('time (s)')
-            ax.set_ylabel('frequency (Hz)')
+            ax.set_xlabel('Time (s)')
+            ax.set_ylabel('Frequency (Hz)')
             ax.set_zlabel('PSD')
 
 
@@ -112,27 +140,38 @@ class CWTx():
         Z = np.where((X > x_low) & (X < x_high), Z, None)
         Z = np.where((Y > y_low) & (Y < y_high), Z, None)
         ax.plot_surface(X, Y, Z, cmap='coolwarm')
-        ax.set_xlabel('time (s)')
-        ax.set_ylabel('frequency (Hz)')
+        ax.set_xlabel('Time (s)')
+        ax.set_ylabel('Frequency (Hz)')
         ax.set_zlabel('PSD')
         ax.set_xlim3d(left=x_low, right=x_high)
         ax.set_ylim(bottom=y_low, top=y_high)
 
 
 
-
-
-
-
     ##### SRM part #####
-    def g_a_SRMsimu(self,):
-        trial_simulation = SRM_formula(
-            Stw=self._pwr_coef, 
-            f_vec=self._freqs, 
-            t_vec=self.t_axis)
-        return trial_simulation
+    def g_a_SRMsimu(self, external_EPSD=None):
+        ''' Draw simulations from the estimated EPSD by SRM
+        '''
+
+        if not external_EPSD:
+            trial_simulation = SRM_formula(
+                Stw=self._pwr_coef, 
+                f_vec=self._freqs, 
+                t_vec=self.t_axis)
+            return trial_simulation
+        else:
+            trial_simulation = SRM_formula(*external_EPSD)
+            return trial_simulation
 
 
-    def g_ensemble_simus(self, ensemble_size):
-        ensemble_list = [self.g_a_SRMsimu() for i in range(ensemble_size)]
-        return np.vstack(ensemble_list)
+
+    def g_ensemble_simus(self, ensemble_size, external_EPSD=None):
+        """ draw an ensemble of sample realizations """
+
+        if not external_EPSD:
+            ensemble_list = [self.g_a_SRMsimu() for i in range(ensemble_size)]
+            return np.vstack(ensemble_list)
+        else:
+            single_realization_func = partial(self.g_a_SRMsimu, external_EPSD=external_EPSD)
+            ensemble_list = [single_realization_func() for i in range(ensemble_size)]
+            return np.vstack(ensemble_list)

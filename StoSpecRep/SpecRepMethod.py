@@ -17,6 +17,21 @@ from .utils import EPSD_show
 
 
 
+"""
+Note:
+Months ago, we first defined a 'SRM' class which turns out can only be used with 
+spectrogram obtained by STFT, but not with scalogram obtained by Wavelet Transform.
+The reason is the shape of EPSD estimates, STFT give very small shape, eg. (57, 129)
+which needs to be interpolated in spectrum to further generate sample realizations.
+
+But Wavelet Transform can give a large Swt shape such that we don't need to interpolate anymore.
+Therefore, it just needs a `SRM_formulat` function (see below).
+"""
+
+
+
+
+
     # alright, let's write up a general function that takes (Stw, w, t)
  
 def SRM_formula(Stw, f_vec, t_vec):
@@ -47,32 +62,46 @@ def SRM_formula(Stw, f_vec, t_vec):
 
 
 class SRM:
+    """ 
+    From a given spectra (a stationary Sww or a nonstationary Swt,
+    used as PSDF, generate simulations. 
+
+    Note that when given an estimated Swt, we need to interpolate the Swt first.
+    Except than that, when given the spectra by a model, shapes are all fine.
+
+    Hint:
+    ----
+    An object is characterised by an EPSD (named as Swt) and resulting sample realizations;
+    """
+
     def __init__(self, wu=100, N1=1024, fs=200, duration=16):
-        self.wu = wu
-        self.N1 = N1        
+        self.wu = wu  # cutoff frequency
+        self.N1 = N1  # total number N
         self.fs = fs
         self.duration = duration
-    # print('the cutoff frequency wu set as:', wu)
         self.t_axis_4simu = np.arange(0, self.duration, 1 / self.fs)  # dt = 1 / Fs
         self.w_axis_4simu = np.arange(0, self.wu, self.wu/self.N1)
 
-    # @property
-    # def t_axis_4simu(self):
-    #     """Create the t-axis of the sample simulation"""
-    #     t_axis_simu = np.arange(0, self.duration, 1 / self.fs)  # dt = 1 / Fs
-    #     return t_axis_simu
+
+    def __str__(self):
+        return '\n'.join([
+        f'*** Generation started by {SRM.__name__} ***',
+        f'cutoff frequency wu (rad/s): {self.wu:.2f}',
+        f'the expected shape of Swt (w, t) axes: ({self.w_axis_4simu.shape}, {self.t_axis_4simu.shape})',
+        f'the lower limit of sampling frequency (Hz): {np.ceil(1 / (2 * np.pi / (2 * self.wu)))}',
+        ])
 
 
-    # # set up the w (rad/s) axis
-    # @property
-    # def w_axis_4simu(self):
-    #     w_axis = np.arange(0, self.wu, self.wu/self.N1)
-    #     return w_axis 
-
-    def _SpecRepsentation0(self, Sww, plot='y'):
+    def SpecRepsentation0(self, Sww):
         '''
-        For now, this func received a spectra as argument,
-        which may be obtained from 'getSww_from_a_model' func
+        The SRM fomula which generates sample simulation from given Swt/Sww.
+        Each call will result in a different realization.
+
+        For now, this func received a spectra as an argument,
+        which may be obtained from 'getSww_from_a_model' func.
+
+        This func is also used in simulations for nonstationary Swt.
+        Beware that I don't know why the scaling factor is 4 right now.
         '''
     
         # create the t axis
@@ -87,15 +116,61 @@ class SRM:
         for i in range(1, self.N1):
             sum = sum + A_n[i] * np.cos(w_n[i] * self.t_axis_4simu + phi_n[i])
         simulation = sum * np.sqrt(2)
-        # print('sampling frequency:', Fs)
-        t_upper_limit = 2 * np.pi / (2 * self.wu)
-        print("the lower limit of sampling frequency:", math.ceil(1 / t_upper_limit))
-        print("the length of the simulation", simulation.shape)
-        if plot == 'y':
-            plt.plot(self.t_axis_4simu, simulation)
-            plt.xlabel('time [s]')
-            plt.ylabel('amp')
+        
+        ''' Follow the original flavor of the SRM method, to use two-sided PSDF '''
+        # The classical implementation of SRM 
+        # by a two-sided specrum is suggested in the paper
+
+        # but in practice I normally use One-sided spectrum, 
+        # ergo, the final simulation should be scaled;
+        # But I don't know what factor to scale
+        simulation = simulation / (2 * 2)
+
         return simulation
+
+
+
+    def _SpecRepsentation0(self, Sww, plot=True):
+        '''
+        This is the backup version of function `self.SpecRepsentation0`
+        This is the original SRM function used for KT model;
+        Note that I ran into an error with two-sided PSDF and one-sided PSDF;
+        Not solved yet.
+
+        For now, this func received a spectra as argument,
+        which may be obtained from 'getSww_from_a_model' func.
+        '''
+    
+        # create the t axis
+        n = np.arange(self.N1)
+        delta_w = self.wu / self.N1
+        w_n = n * delta_w
+        A_n = np.sqrt(2 * Sww * delta_w)
+        phi_n = np.random.uniform(0, 2 * np.pi, self.N1)
+    
+        # Note that A0=0 or S(w0)=0
+        sum = 0
+        for i in range(1, self.N1):
+            sum = sum + A_n[i] * np.cos(w_n[i] * self.t_axis_4simu + phi_n[i])
+        simulation = sum * np.sqrt(2)
+        
+        ''' Follow the original flavor of the SRM method, to use two-sided PSDF'''
+        # Above is the classical implementation of SRM 
+        # by a two-sided specrum as suggested in the paper
+
+        # but in practice I normally use One-sided spectrum, 
+        # ergo, the final simulation should be divided by 2 
+        # simulation = simulation / (2 * 2)
+
+        if plot:
+            plt.plot(self.t_axis_4simu, simulation)
+            plt.title('A simulation by SRM')
+            plt.xlabel('time [s]')
+            plt.ylabel('Amp')
+        return simulation
+
+
+
 
 
     @staticmethod
@@ -104,10 +179,10 @@ class SRM:
 
 
 
-    def _interpo_spectra(self, Pxx, freqs, t_bins, plotting=True, format='2d', title_name='interpolated_spectra'):
+    def _interpo_spectra(self, Pxx, freqs, t_bins):
     
         """
-        Given Swt estimated by STFT, 
+        Given Swt estimated by STFT (one-sided), 
         ie. Pxx, freqs, t_bins, im = ax2.specgram(...)
         
         Follow the example procedures;
@@ -132,20 +207,16 @@ class SRM:
         grid_z1 = np.flipud(grid_z0)
         
         self._interpolated_bundle = (grid_z1, new_y_coord, new_x_coord)
-        # if plotting:
-        #     # plotting the Swt on new axes
-        #     EPSD_show(grid_z1, new_y_coord, new_x_coord, format=format, title_name=title_name)
         return grid_z1
     
 
 
-    def _get_interpolated_spectra(self, format):
+    def get_interpolated_spectra(self, format):
         EPSD_show(*self._interpolated_bundle, format=format, title_name='interpolated spectra')
-        # plt.show()       
 
     
 
-    def nonsta_simulation(self, Pxx, freqs, t_bins, plotting=False):
+    def nonsta_simulation(self, Pxx, freqs, t_bins):
         """
         For given estimated spectra, do interpolation first and then do simulation;
         
@@ -158,10 +229,35 @@ class SRM:
         Used to control if showing the estimated spectra in 2d or 3d
         """
         interpolated_Swt = self._interpo_spectra(Pxx, freqs, t_bins)
-        x = self._SpecRepsentation0(interpolated_Swt, plot='y')
+        x = self.SpecRepsentation0(interpolated_Swt)
         return x
 
 
+    ''' !!! the high-level func called in the main file '''
+    def nonsta_esmb_simus(self, Pxx, freqs, t_bins, ensemble_num):
+        """ 
+        The high-level func that generates an ensemble of simulations.
+        
+        Steps:
+        -----
+        Interpolate an estimated Swt to the expected shape of a PSDF;
+        Then simulate realizations from the interpolated Swt;
+
+
+        Hint:
+        ----
+        Similar to the func above, with only difference that 
+        we generate multiple simulations here
+        """
+
+        interpolated_Swt = self._interpo_spectra(Pxx, freqs, t_bins)
+
+        simus = []
+        for i in range(ensemble_num):
+            x = self.SpecRepsentation0(interpolated_Swt)
+            simus.append(x)
+        simus = np.vstack(simus)
+        return simus
 
 
 
@@ -171,6 +267,7 @@ class SRM:
 
 
 
+    ##### I've forgotten what below are #####
 
     def SpecRepsentation3(self, Sww, t_bins, plot='y'):
         '''
@@ -200,7 +297,7 @@ class SRM:
         simulation = sum * np.sqrt(2)
         # print('sampling frequency:', Fs)
         t_upper_limit = 2 * np.pi / (2 * self.wu)
-        print("the lower limit of sampling frequency:", math.ceil(1 / t_upper_limit))
+        print("the lower limit of sampling frequency:", np.ceil(1 / t_upper_limit))
         print("the length of the simulation", simulation.shape)
         if plot == 'y':
             plt.plot(self.t_axis_4simu, simulation)

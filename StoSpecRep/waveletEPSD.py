@@ -113,6 +113,11 @@ class CWTx():
             ax.set_ylabel("Frequency (Hz)")
             plt.colorbar(im)
         elif option == '3d':
+            """ a direct 3D plotting function without the ability
+            to control the limit in X,Y,Z axis. However, the function 
+            below does.  
+            """
+
             fig = plt.figure(figsize=(8,8))
             ax = plt.axes(projection='3d')
             X, Y = np.meshgrid(self.t_axis, self._freqs)
@@ -123,7 +128,7 @@ class CWTx():
             ax.set_zlabel('PSD')
 
 
-    def plot_3dEPSD(self, *, x_low, x_high, y_low, y_high):
+    def plot_3dEPSD(self, external_EPSDbundle=None, *, x_low, x_high, y_low, y_high):
         """ Plot the computed EPSD by wavelet transform of a certain range 
         
         Parameters
@@ -134,19 +139,35 @@ class CWTx():
             the lower limit of the frequency axis;=
         """
 
-        fig = plt.figure(figsize=(8, 8))
-        ax = plt.axes(projection='3d')
-        X, Y = np.meshgrid(self.t_axis, self._freqs)
-        Z = self._pwr_coef
-        # a workaround to set up the range
-        Z = np.where((X > x_low) & (X < x_high), Z, None)
-        Z = np.where((Y > y_low) & (Y < y_high), Z, None)
-        ax.plot_surface(X, Y, Z, cmap='coolwarm')
-        ax.set_xlabel('Time (s)')
-        ax.set_ylabel('Frequency (Hz)')
-        ax.set_zlabel('PSD')
-        ax.set_xlim3d(left=x_low, right=x_high)
-        ax.set_ylim(bottom=y_low, top=y_high)
+        if external_EPSDbundle is None:
+            fig = plt.figure(figsize=(8, 8))
+            ax = plt.axes(projection='3d')
+            X, Y = np.meshgrid(self.t_axis, self._freqs)
+            Z = self._pwr_coef
+            # a workaround to set up the range
+            Z = np.where((X > x_low) & (X < x_high), Z, None)
+            Z = np.where((Y > y_low) & (Y < y_high), Z, None)
+            ax.plot_surface(X, Y, Z, cmap='coolwarm')
+            ax.set_xlabel('Time (s)')
+            ax.set_ylabel('Frequency (Hz)')
+            ax.set_zlabel('PSD')
+            ax.set_xlim3d(left=x_low, right=x_high)
+            ax.set_ylim(bottom=y_low, top=y_high)
+        else:
+            print('You have to feed in an EPSD bundle')
+            fig = plt.figure(figsize=(8, 8))
+            ax = plt.axes(projection='3d')
+            X, Y = np.meshgrid(external_EPSDbundle[2], external_EPSDbundle[1])
+            Z = external_EPSDbundle[0]
+            # a workaround to set up the range
+            Z = np.where((X > x_low) & (X < x_high), Z, None)
+            Z = np.where((Y > y_low) & (Y < y_high), Z, None)
+            ax.plot_surface(X, Y, Z, cmap='coolwarm')
+            ax.set_xlabel('Time (s)')
+            ax.set_ylabel('Frequency (Hz)')
+            ax.set_zlabel('PSD')
+            ax.set_xlim3d(left=x_low, right=x_high)
+            ax.set_ylim(bottom=y_low, top=y_high)
 
 
 

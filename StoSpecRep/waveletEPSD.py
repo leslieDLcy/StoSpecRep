@@ -1,7 +1,10 @@
 from collections import namedtuple
+import seaborn as sns
 import pywt
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import ticker
 from functools import partial
 from .console import console
 from .SpecRepMethod import SRM_formula
@@ -83,8 +86,9 @@ class CWTx():
                 sampling_period=self.dt,
                 method='fft',
                 axis=1)
-            EPSD_pwr_coef = np.square(np.abs(coef)) * 2 * self.dt
-            EPSD_pwr_coef_ensemnle_mean = np.mean(EPSD_pwr_coef, axis=1)
+            # we store the EPSD across ensemble as an instance variable
+            self._EPSD_pwr_coef_all = np.square(np.abs(coef)) * 2 * self.dt
+            EPSD_pwr_coef_ensemnle_mean = np.mean(self._EPSD_pwr_coef_all, axis=1)
             return EPSD_pwr_coef_ensemnle_mean, freqs, self.t_axis
         else:
             coef, self._freqs = pywt.cwt(
@@ -198,3 +202,75 @@ class CWTx():
             single_realization_func = partial(self.g_a_SRMsimu, external_EPSD=external_EPSD)
             ensemble_list = [single_realization_func() for i in range(ensemble_size)]
             return np.vstack(ensemble_list)
+
+
+
+
+    def EPSD_uncertainty_givenranges(self, external_EPSDbundle):
+        """ Shown the EPSD uncertain over ensemble size, given predefined ranges
+
+        Parameters
+        """
+
+        fig, ax = plt.subplots()
+
+        CriterionArray = np.array([[4.0, 5.0], [5.0, 6.0], [6.0, 7.0], [8.0, 10.0]])
+        cordinates_ofinterest = []
+
+
+        # for each range, give back a pair of coordinates   
+        for i in CriterionArray:
+            lower_lmt, upper_lmt = i
+            cordinates_one = np.argwhere((upper_lmt > external_EPSDbundle[0]) & (external_EPSDbundle[0] > lower_lmt))
+            if cordinates_one.size != 0:
+                cordinates_ofinterest.append(cordinates_one[-1])
+            else:
+                continue
+
+
+        # with an array of coordinates
+        cordinates_ofinterest = np.vstack(cordinates_ofinterest)
+
+        # new implementations above break at here
+        _a_containter = []
+        _indentifier = []
+
+        for item in cordinates_ofinterest:
+            x, y = item
+            _a_containter.append(self._EPSD_pwr_coef_all[x, :, y])
+            _indentifier.append(np.full(shape=self._EPSD_pwr_coef_all[x, :, y].shape, 
+                                        fill_value=f"f={external_EPSDbundle[1][x]:.1f},t={external_EPSDbundle[2][y]:.1f}"))
+
+        for_the_data = np.concatenate(_a_containter, axis=None)
+        for_the_identifier = np.concatenate(_indentifier, axis=None)
+        df = pd.DataFrame({'Swt': for_the_data, 'Location': for_the_identifier})
+
+        ax = sns.kdeplot(
+           data=df, x="Swt", hue="Location",
+           legend=True,
+           fill=True, 
+           common_norm=False, 
+           palette="crest",
+           alpha=.5, 
+           linewidth=0,
+           cut=0,
+        )
+        ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5))
+        # ax.set_xlim([0, 8])
+        # ax.legend(fontsize=9, frameon=False, title=None)
+
+
+
+        ''' only for gettung the label in the plot '''
+
+        the_labels= []
+        for row in cordinates_ofinterest:
+            x, y = row
+            the_labels.append(r"$f=$" + f"{external_EPSDbundle[1][x]:.1f}" + ', ' + r"$t=$" + f"{external_EPSDbundle[2][y]:.1f}")
+
+        the_labels.reverse()
+        ax.legend(labels=the_labels, loc='upper left')
+
+
+        ax.set_xlabel(r'$S(f, t)$')
+        return {"cordinates_ofinterest":cordinates_ofinterest}

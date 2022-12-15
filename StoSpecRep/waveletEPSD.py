@@ -76,19 +76,16 @@ class CWTx():
         if externaldata is not None:
             console.print("Yo! Computing EPSD of external data with the proposed scales")
             
-            EPSD_container = []
-            for row in externaldata:
-                coef, freqs = pywt.cwt(
-                    data=row, 
-                    scales=self._proposed_scales, 
-                    wavelet='morl', 
-                    sampling_period=self.dt)
-                EPSD_pwr_coef = np.square(np.abs(coef)) * 2 * self.dt
-                EPSD_container.append(EPSD_pwr_coef)
-            EPSD_container = np.stack(EPSD_container, axis=0)
-            EPSD_mean = np.mean(EPSD_container, axis=0)
-            # return the bundle    
-            return EPSD_mean, freqs, self.t_axis
+            coef, freqs = pywt.cwt(
+                data=externaldata, 
+                scales=self._proposed_scales, 
+                wavelet='morl', 
+                sampling_period=self.dt,
+                method='fft',
+                axis=1)
+            EPSD_pwr_coef = np.square(np.abs(coef)) * 2 * self.dt
+            EPSD_pwr_coef_ensemnle_mean = np.mean(EPSD_pwr_coef, axis=1)
+            return EPSD_pwr_coef_ensemnle_mean, freqs, self.t_axis
         else:
             coef, self._freqs = pywt.cwt(
                         data=self.signal, 
@@ -99,9 +96,6 @@ class CWTx():
             
             console.print("Yo! Computing EPSD with the proposed scales")
             console.print(f"Swt shape: {self._pwr_coef.shape}")
-
-
-
 
 
 
@@ -153,7 +147,7 @@ class CWTx():
         ''' Draw simulations from the estimated EPSD by SRM
         '''
 
-        if not external_EPSD:
+        if external_EPSD is None:
             trial_simulation = SRM_formula(
                 Stw=self._pwr_coef, 
                 f_vec=self._freqs, 
@@ -168,7 +162,7 @@ class CWTx():
     def g_ensemble_simus(self, ensemble_size, external_EPSD=None):
         """ draw an ensemble of sample realizations """
 
-        if not external_EPSD:
+        if external_EPSD is None:
             ensemble_list = [self.g_a_SRMsimu() for i in range(ensemble_size)]
             return np.vstack(ensemble_list)
         else:

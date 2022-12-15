@@ -99,10 +99,10 @@ class CWTx():
 
 
 
-    def plot_waveletEPSD(self, option='3d'):
-        """ Plot the computed EPSD by wavelet transform """
+    def plot_wavelet2dEPSD(self, external_EPSDbundle=None):
+        """ Plot the computed EPSD by wavelet transform in 2D """
             
-        if option == '2d':
+        if external_EPSDbundle is None:
             fig, ax =plt.subplots()
             im = ax.pcolormesh(
                     self.t_axis, self._freqs, self._pwr_coef, 
@@ -112,20 +112,20 @@ class CWTx():
             ax.set_xlabel("Time")
             ax.set_ylabel("Frequency (Hz)")
             plt.colorbar(im)
-        elif option == '3d':
-            """ a direct 3D plotting function without the ability
-            to control the limit in X,Y,Z axis. However, the function 
-            below does.  
-            """
+        else:
+            fig, ax =plt.subplots()
+            im = ax.pcolormesh(
+                    external_EPSDbundle[2], external_EPSDbundle[1], external_EPSDbundle[0], 
+                    cmap='BuPu', 
+                    shading='gouraud',
+                    rasterized=True)
+            ax.set_xlabel("Time")
+            ax.set_ylabel("Frequency (Hz)")
+            plt.colorbar(im)
 
-            fig = plt.figure(figsize=(8,8))
-            ax = plt.axes(projection='3d')
-            X, Y = np.meshgrid(self.t_axis, self._freqs)
-            Z = self._pwr_coef
-            ax.plot_surface(X, Y, Z, cmap='coolwarm')
-            ax.set_xlabel('Time (s)')
-            ax.set_ylabel('Frequency (Hz)')
-            ax.set_zlabel('PSD')
+
+
+
 
 
     def plot_3dEPSD(self, external_EPSDbundle=None, *, x_low, x_high, y_low, y_high):

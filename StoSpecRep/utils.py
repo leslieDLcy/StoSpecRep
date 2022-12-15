@@ -4,6 +4,7 @@ import itertools
 import pandas as pd
 from matplotlib import mlab
 from scipy.interpolate import griddata
+from collections import namedtuple
 
 def EPSD_show(Pxx, freqs, t_bins, format, title_name='the estimated spectra'):
         """Given the 3 elements returned by plt.specgram
@@ -85,3 +86,9 @@ def simple_interpol2d(Pxx, freqs, t_bins):
     grid_z0 = griddata(points, values, xi=(xx, yy), method='nearest')
     print("double check the shape after interpolation:", grid_z0.shape)
     return grid_z0
+
+
+
+# as an effort to standarize the uses of EPSD from STFT and wavelet transform
+
+SpecBundle = namedtuple('SpecBundle', ['epsd', 'freq', 't_axis'])

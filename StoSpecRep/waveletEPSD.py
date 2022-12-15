@@ -124,7 +124,15 @@ class CWTx():
 
 
     def plot_3dEPSD(self, *, x_low, x_high, y_low, y_high):
-        """ Plot the computed EPSD by wavelet transform of a certain range """
+        """ Plot the computed EPSD by wavelet transform of a certain range 
+        
+        Parameters
+        ----------
+        x_low: int
+            the lower limit of the time axis;
+        y_low: int
+            the lower limit of the frequency axis;=
+        """
 
         fig = plt.figure(figsize=(8, 8))
         ax = plt.axes(projection='3d')

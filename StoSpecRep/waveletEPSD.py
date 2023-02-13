@@ -3,6 +3,7 @@ import seaborn as sns
 import pywt
 import numpy as np
 import pandas as pd
+import itertools
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 from functools import partial
@@ -91,6 +92,7 @@ class CWTx():
             EPSD_pwr_coef_ensemnle_mean = np.mean(self._EPSD_pwr_coef_all, axis=1)
             return EPSD_pwr_coef_ensemnle_mean, freqs, self.t_axis
         else:
+            print('Computing the recording')
             coef, self._freqs = pywt.cwt(
                         data=self.signal, 
                         scales=self._proposed_scales, 
@@ -117,6 +119,7 @@ class CWTx():
             ax.set_ylabel("Frequency (Hz)")
             plt.colorbar(im)
         else:
+            print('Plotting an external EPSD bundle')
             fig, ax =plt.subplots()
             im = ax.pcolormesh(
                     external_EPSDbundle[2], external_EPSDbundle[1], external_EPSDbundle[0], 
@@ -158,7 +161,7 @@ class CWTx():
             ax.set_xlim3d(left=x_low, right=x_high)
             ax.set_ylim(bottom=y_low, top=y_high)
         else:
-            print('You have to feed in an EPSD bundle')
+            print('Plotting an exteranl EPSD bundle')
             fig = plt.figure(figsize=(8, 8))
             ax = plt.axes(projection='3d')
             X, Y = np.meshgrid(external_EPSDbundle[2], external_EPSDbundle[1])
@@ -206,17 +209,41 @@ class CWTx():
 
 
 
-    def EPSD_uncertainty_givenranges(self, external_EPSDbundle):
-        """ Shown the EPSD uncertain over ensemble size, given predefined ranges
+    def EPSD_UncertaintyAlongTime(self, external_EPSDbundle, freq, time_range=[6, 7, 8]):
+        """ Shown the EPSD uncertain over ensemble size, along the time axis
+
+        Note
+        ----
+        Since working with evolutionary spectrum, we can fix a `f` and see
+        the distribution shape change along the time axis;
 
         Parameters
+        ----------
+        external_EPSDbundle : array
+            External EPSD arrays from ensemble
+        freq : float
+            the fixed frequency value
+        time_range : array
+            the times to show in seconds
         """
 
         fig, ax = plt.subplots()
 
-        CriterionArray = np.array([[4.0, 5.0], [5.0, 6.0], [6.0, 7.0], [8.0, 10.0]])
-        cordinates_ofinterest = []
+        # designate a `f` value;  # f=2.0hz
+        fixedfreq = external_EPSDbundle[1][250]
 
+        # time in seconds
+        console.log(f"select times: {time_range}")
+
+        Sft_by_time = {}
+
+        # simply get Sft values for fixed 'f' for t in every second
+        for time in time_range:
+            Sft_by_time[time] = self._EPSD_pwr_coef_all[250, :, time * self.Fs]
+
+
+
+        cordinates_ofinterest = []
 
         # for each range, give back a pair of coordinates   
         for i in CriterionArray:
@@ -227,6 +254,105 @@ class CWTx():
             else:
                 continue
 
+        # with an array of coordinates
+        cordinates_ofinterest = np.vstack(cordinates_ofinterest)
+
+        # new implementations above break at here
+        _a_containter = []
+        _indentifier = []
+        ground_truth = []
+
+        for item in cordinates_ofinterest:
+            x, y = item
+            _a_containter.append(self._EPSD_pwr_coef_all[x, :, y])
+            _indentifier.append(np.full(shape=self._EPSD_pwr_coef_all[x, :, y].shape, 
+                                        fill_value=f"f={external_EPSDbundle[1][x]:.1f},t={external_EPSDbundle[2][y]:.1f}"))
+            ground_truth.append(self._pwr_coef[x,y])
+
+        for_the_data = np.concatenate(_a_containter, axis=None)
+        for_the_identifier = np.concatenate(_indentifier, axis=None)
+        df = pd.DataFrame({'Swt': for_the_data, 'Location': for_the_identifier})
+
+        # fill-in
+        # ax = sns.kdeplot(
+        #    data=df, 
+        #    x="Swt", 
+        #    hue="Location",
+        #    bw_adjust=2,
+        #    legend=True,
+        #    fill=True, 
+        #    common_norm=False, 
+        #    palette="crest",
+        #    alpha=.5, 
+        #    linewidth=0,
+        # )
+
+        # no fill-in
+        ax = sns.kdeplot(
+           data=df, 
+           x="Swt", 
+           hue="Location",
+           bw_adjust=2,
+           legend=True,
+        )
+
+
+        ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5))
+
+        ''' only for getting the label in the plot '''
+        the_labels= []
+        for row in cordinates_ofinterest:
+            x, y = row
+            the_labels.append(r"$f=$" + f"{external_EPSDbundle[1][x]:.1f}" + ', ' + r"$t=$" + f"{external_EPSDbundle[2][y]:.1f}")
+
+        the_labels.reverse()
+        ax.legend(labels=the_labels, loc=0)
+        ax.set_xlabel(r'$S(f, t)$')
+
+
+        # set up the color of the vertical lines (ground truth)
+        palette = itertools.cycle(sns.color_palette("crest"))
+        
+        colors = []
+        for i in range(len(ground_truth)):
+            colors.append(next(palette))
+
+        colors.reverse()
+
+        for gt, color in zip(ground_truth, colors):
+            ax.axvline(x=gt, ymin=0, ymax=1, color=color, linestyle='--', linewidth=2)
+
+        return {"cordinates_ofinterest":cordinates_ofinterest}
+
+
+
+
+
+    def EPSD_uncertainty_givenranges(self, external_EPSDbundle, style='fillin'):
+        """ Shown the EPSD uncertain over ensemble size, given predefined ranges of EPS
+
+        Parameters
+        ----------
+        external_EPSDbundle : array
+            External EPSD arrays from ensemble
+        """
+
+        fig, ax = plt.subplots()
+
+        # CriterionArray = np.array([[4.0, 5.0], [5.0, 6.0], [6.0, 7.0], [8.0, 10.0]])
+        
+        CriterionArray = np.array([[2.0, 4.0], [6.0, 8.0], [8.0, 10.0]])
+        cordinates_ofinterest = []
+
+        # for each range, give back a pair of coordinates   
+        for i in CriterionArray:
+            lower_lmt, upper_lmt = i
+            cordinates_one = np.argwhere((upper_lmt > external_EPSDbundle[0]) & (external_EPSDbundle[0] > lower_lmt))
+            if cordinates_one.size != 0:
+                rnd = np.random.choice(len(cordinates_one), replace=False)
+                cordinates_ofinterest.append(cordinates_one[rnd])
+            else:
+                continue
 
         # with an array of coordinates
         cordinates_ofinterest = np.vstack(cordinates_ofinterest)
@@ -234,43 +360,85 @@ class CWTx():
         # new implementations above break at here
         _a_containter = []
         _indentifier = []
+        ground_truth = []
 
         for item in cordinates_ofinterest:
             x, y = item
             _a_containter.append(self._EPSD_pwr_coef_all[x, :, y])
             _indentifier.append(np.full(shape=self._EPSD_pwr_coef_all[x, :, y].shape, 
                                         fill_value=f"f={external_EPSDbundle[1][x]:.1f},t={external_EPSDbundle[2][y]:.1f}"))
+            ground_truth.append(self._pwr_coef[x,y])
 
         for_the_data = np.concatenate(_a_containter, axis=None)
         for_the_identifier = np.concatenate(_indentifier, axis=None)
         df = pd.DataFrame({'Swt': for_the_data, 'Location': for_the_identifier})
 
-        ax = sns.kdeplot(
-           data=df, x="Swt", hue="Location",
-           legend=True,
-           fill=True, 
-           common_norm=False, 
-           palette="crest",
-           alpha=.5, 
-           linewidth=0,
-           cut=0,
-        )
+        if style == 'fillin':
+
+            # fill-in
+            ax = sns.kdeplot(
+               data=df, 
+               x="Swt", 
+               hue="Location",
+               bw_adjust=2,
+               legend=True,
+               fill=True, 
+               common_norm=False, 
+               palette="crest",
+               alpha=.5, 
+               linewidth=0,
+            )
+        elif style == 'nofillin':
+            # no fill-in
+            ax = sns.kdeplot(
+            data=df, 
+            x="Swt", 
+            hue="Location",
+            bw_adjust=2,
+            legend=True,
+            )
+
         ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5))
-        # ax.set_xlim([0, 8])
-        # ax.legend(fontsize=9, frameon=False, title=None)
 
-
-
-        ''' only for gettung the label in the plot '''
-
+        ''' only for getting the label in the plot '''
         the_labels= []
         for row in cordinates_ofinterest:
             x, y = row
             the_labels.append(r"$f=$" + f"{external_EPSDbundle[1][x]:.1f}" + ', ' + r"$t=$" + f"{external_EPSDbundle[2][y]:.1f}")
 
         the_labels.reverse()
-        ax.legend(labels=the_labels, loc='upper left')
-
-
+        ax.legend(labels=the_labels, loc=0)
         ax.set_xlabel(r'$S(f, t)$')
+
+
+        # set up the color of the vertical lines (ground truth)
+        palette = itertools.cycle(sns.color_palette("crest"))
+        
+        colors = []
+        for i in range(len(ground_truth)):
+            colors.append(next(palette))
+
+        colors.reverse()
+
+        for gt, color in zip(ground_truth, colors):
+            ax.axvline(x=gt, ymin=0, ymax=1, color=color, linestyle='--', linewidth=2)
+
         return {"cordinates_ofinterest":cordinates_ofinterest}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -11,9 +11,10 @@ from .console import console
 from .SpecRepMethod import SRM_formula
 
 
+WaveletBundle = namedtuple('WaveletBundle', ['EPSD_ensemble_mean', 'freqs', 't_axis', 'EPSD_ensemble_all'])
 
 class CWTx():
-    """ We assume we are using 'morl' wavelet """
+    """ We assume using 'morl' wavelet """
 
 
     def __init__(self, signal, fs, t_axis):
@@ -21,6 +22,7 @@ class CWTx():
         self.dt = 1 / fs
         self.signal = signal
         self.t_axis = t_axis
+
 
     @property
     def goto_scales(self,):
@@ -56,12 +58,16 @@ class CWTx():
 
 
     def check_scales(self, a, b, num):
+        """ Check freq ranges given scales """
+
         checked_scales = np.logspace(start=a, stop=b, num=num,  base=2, endpoint=True)
         console.print(f'(a={a},b={b}) ==> scales_range({checked_scales[0]}, {checked_scales[-1]}) ==> {self.freqhelper(checked_scales)}')
 
 
 
     def propose_scales(self, a, b, num):
+        """ propose scales for later computation """            
+
         self._proposed_scales = np.logspace(start=a, stop=b, num=num,  base=2, endpoint=True)
         console.print("You've proposed scales:")
         self.check_scales(a, b, num)
@@ -78,7 +84,7 @@ class CWTx():
         '''
 
         if externaldata is not None:
-            console.print("Yo! Computing EPSD of external data with the proposed scales")
+            console.print("Yo! Computing EPSD from external data with the proposed scales")
             
             coef, freqs = pywt.cwt(
                 data=externaldata, 
@@ -87,12 +93,13 @@ class CWTx():
                 sampling_period=self.dt,
                 method='fft',
                 axis=1)
+                
             # we store the EPSD across ensemble as an instance variable
-            self._EPSD_pwr_coef_all = np.square(np.abs(coef)) * 2 * self.dt
-            EPSD_pwr_coef_ensemnle_mean = np.mean(self._EPSD_pwr_coef_all, axis=1)
-            return EPSD_pwr_coef_ensemnle_mean, freqs, self.t_axis
+            EPSD_pwr_coef_all = np.square(np.abs(coef)) * 2 * self.dt
+            EPSD_pwr_coef_ensemble_mean = np.mean(EPSD_pwr_coef_all, axis=1)
+            return WaveletBundle(EPSD_pwr_coef_ensemble_mean, freqs, self.t_axis, EPSD_pwr_coef_all)
         else:
-            print('Computing the recording')
+            print('Computing based on the recording')
             coef, self._freqs = pywt.cwt(
                         data=self.signal, 
                         scales=self._proposed_scales, 
@@ -209,7 +216,7 @@ class CWTx():
 
 
 
-    def EPSD_UncertaintyAlongTime(self, external_EPSDbundle, freq, time_range=[6, 7, 8]):
+    def EPSD_UncertaintyAlongTime(self, external_EPSDbundle, fixedFreqIndex, time_range=[6, 7, 8]):
         """ Shown the EPSD uncertain over ensemble size, along the time axis
 
         Note
@@ -232,99 +239,41 @@ class CWTx():
         # designate a `f` value;  # f=2.0hz
         fixedfreq = external_EPSDbundle[1][250]
 
+        fixedFreqIndex = 250
+
+
         # time in seconds
         console.log(f"select times: {time_range}")
+        time_range = np.array(time_range).astype('int32')
 
         Sft_by_time = {}
+        ground_truth= [] 
+        the_labels = []
 
         # simply get Sft values for fixed 'f' for t in every second
         for time in time_range:
-            Sft_by_time[time] = self._EPSD_pwr_coef_all[250, :, time * self.Fs]
+            Sft_by_time[f't{time}'] = external_EPSDbundle.EPSD_ensemble_all[fixedFreqIndex, :, int(time * self.fs)]
+            ground_truth.append(self._pwr_coef[fixedFreqIndex, int(time * self.fs)])
+            the_labels.append(f't={time}')
 
+        selected_Swt = pd.DataFrame.from_dict(Sft_by_time)
 
-
-        cordinates_ofinterest = []
-
-        # for each range, give back a pair of coordinates   
-        for i in CriterionArray:
-            lower_lmt, upper_lmt = i
-            cordinates_one = np.argwhere((upper_lmt > external_EPSDbundle[0]) & (external_EPSDbundle[0] > lower_lmt))
-            if cordinates_one.size != 0:
-                cordinates_ofinterest.append(cordinates_one[-1])
-            else:
-                continue
-
-        # with an array of coordinates
-        cordinates_ofinterest = np.vstack(cordinates_ofinterest)
-
-        # new implementations above break at here
-        _a_containter = []
-        _indentifier = []
-        ground_truth = []
-
-        for item in cordinates_ofinterest:
-            x, y = item
-            _a_containter.append(self._EPSD_pwr_coef_all[x, :, y])
-            _indentifier.append(np.full(shape=self._EPSD_pwr_coef_all[x, :, y].shape, 
-                                        fill_value=f"f={external_EPSDbundle[1][x]:.1f},t={external_EPSDbundle[2][y]:.1f}"))
-            ground_truth.append(self._pwr_coef[x,y])
-
-        for_the_data = np.concatenate(_a_containter, axis=None)
-        for_the_identifier = np.concatenate(_indentifier, axis=None)
-        df = pd.DataFrame({'Swt': for_the_data, 'Location': for_the_identifier})
-
-        # fill-in
-        # ax = sns.kdeplot(
-        #    data=df, 
-        #    x="Swt", 
-        #    hue="Location",
-        #    bw_adjust=2,
-        #    legend=True,
-        #    fill=True, 
-        #    common_norm=False, 
-        #    palette="crest",
-        #    alpha=.5, 
-        #    linewidth=0,
-        # )
-
-        # no fill-in
         ax = sns.kdeplot(
-           data=df, 
-           x="Swt", 
-           hue="Location",
+           data = selected_Swt, 
            bw_adjust=2,
-           legend=True,
-        )
+           legend=True)
 
-
+        ax.set_xlabel(r'$S(f, t)$')
         ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5))
 
-        ''' only for getting the label in the plot '''
-        the_labels= []
-        for row in cordinates_ofinterest:
-            x, y = row
-            the_labels.append(r"$f=$" + f"{external_EPSDbundle[1][x]:.1f}" + ', ' + r"$t=$" + f"{external_EPSDbundle[2][y]:.1f}")
 
-        the_labels.reverse()
-        ax.legend(labels=the_labels, loc=0)
-        ax.set_xlabel(r'$S(f, t)$')
+        # ''' only for getting the legend in the plot '''
 
-
-        # set up the color of the vertical lines (ground truth)
-        palette = itertools.cycle(sns.color_palette("crest"))
+        # no color
+        ground_truth.reverse()
+        for gt in ground_truth:
+            ax.axvline(x=gt, ymin=0, ymax=1, linestyle='--', linewidth=2)
         
-        colors = []
-        for i in range(len(ground_truth)):
-            colors.append(next(palette))
-
-        colors.reverse()
-
-        for gt, color in zip(ground_truth, colors):
-            ax.axvline(x=gt, ymin=0, ymax=1, color=color, linestyle='--', linewidth=2)
-
-        return {"cordinates_ofinterest":cordinates_ofinterest}
-
-
 
 
 
@@ -364,8 +313,8 @@ class CWTx():
 
         for item in cordinates_ofinterest:
             x, y = item
-            _a_containter.append(self._EPSD_pwr_coef_all[x, :, y])
-            _indentifier.append(np.full(shape=self._EPSD_pwr_coef_all[x, :, y].shape, 
+            _a_containter.append(external_EPSDbundle.EPSD_ensemble_all[x, :, y])
+            _indentifier.append(np.full(shape=external_EPSDbundle.EPSD_ensemble_all[x, :, y].shape, 
                                         fill_value=f"f={external_EPSDbundle[1][x]:.1f},t={external_EPSDbundle[2][y]:.1f}"))
             ground_truth.append(self._pwr_coef[x,y])
 

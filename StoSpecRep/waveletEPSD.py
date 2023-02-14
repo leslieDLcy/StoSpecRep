@@ -9,7 +9,8 @@ from matplotlib import ticker
 from functools import partial
 from .console import console
 from .SpecRepMethod import SRM_formula
-
+from cycler import cycler
+import matplotlib as mpl
 
 WaveletBundle = namedtuple('WaveletBundle', ['EPSD_ensemble_mean', 'freqs', 't_axis', 'EPSD_ensemble_all'])
 
@@ -197,7 +198,7 @@ class CWTx():
                 t_vec=self.t_axis)
             return trial_simulation
         else:
-            trial_simulation = SRM_formula(*external_EPSD)
+            trial_simulation = SRM_formula(external_EPSD[0], external_EPSD[1], external_EPSD[2])
             return trial_simulation
 
 
@@ -215,8 +216,8 @@ class CWTx():
 
 
 
-
-    def EPSD_UncertaintyAlongTime(self, external_EPSDbundle, fixedFreqIndex, time_range=[6, 7, 8]):
+    # @mpl.rc_context({'axes.prop_cycle': cycler(marker=['o', 'x', '.'])})
+    def EPSD_UncertaintyAlongTime(self, external_EPSDbundle, fixedFreqIndex=250, time_range=[6, 7, 8]):
         """ Shown the EPSD uncertain over ensemble size, along the time axis
 
         Note
@@ -237,14 +238,12 @@ class CWTx():
         fig, ax = plt.subplots()
 
         # designate a `f` value;  # f=2.0hz
-        fixedfreq = external_EPSDbundle[1][250]
-
-        fixedFreqIndex = 250
-
+        fixedfreq = external_EPSDbundle[1][fixedFreqIndex]
+        print('the frequency working with', fixedfreq)
 
         # time in seconds
         console.log(f"select times: {time_range}")
-        time_range = np.array(time_range).astype('int32')
+        time_range = np.array(time_range)
 
         Sft_by_time = {}
         ground_truth= [] 
@@ -261,19 +260,24 @@ class CWTx():
         ax = sns.kdeplot(
            data = selected_Swt, 
            bw_adjust=2,
-           legend=True)
+           legend=True,
+           linewidth=1.5,
+           color='blue')
 
         ax.set_xlabel(r'$S(f, t)$')
+        ax.grid(axis='both')
         ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5))
 
-
         # ''' only for getting the legend in the plot '''
-
         # no color
         ground_truth.reverse()
         for gt in ground_truth:
-            ax.axvline(x=gt, ymin=0, ymax=1, linestyle='--', linewidth=2)
+            ax.axvline(x=gt, ymin=0, ymax=1, linestyle='-', linewidth=1, color='purple')
         
+        the_labels = []
+        for time in time_range:
+            the_labels.append(r'$t$' + f'={time:.1f}')
+        ax.legend(labels=the_labels, loc=0)
 
 
 

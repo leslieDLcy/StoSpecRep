@@ -169,7 +169,8 @@ class CWTx():
             ax.plot_surface(X, Y, Z, cmap='coolwarm')
             ax.set_xlabel('Time (s)')
             ax.set_ylabel('Frequency (Hz)')
-            ax.set_zlabel('PSD')
+            ax.zaxis.set_rotate_label(False)  # disable automatic rotation
+            ax.set_zlabel('PSD', rotation=270)
             ax.set_xlim3d(left=x_low, right=x_high)
             ax.set_ylim(bottom=y_low, top=y_high)
         else:
@@ -184,7 +185,9 @@ class CWTx():
             ax.plot_surface(X, Y, Z, cmap='coolwarm')
             ax.set_xlabel('Time (s)')
             ax.set_ylabel('Frequency (Hz)')
-            ax.set_zlabel('PSD')
+            ax.zaxis.set_rotate_label(False)  # disable automatic rotation
+            ax.set_zlabel('PSD', rotation=270)
+            # ax.set_zlabel('PSD')
             ax.set_xlim3d(left=x_low, right=x_high)
             ax.set_ylim(bottom=y_low, top=y_high)
 
@@ -290,10 +293,10 @@ class CWTx():
 
         # ax.legend(handles=[*handles_sns, target_line], labels=the_labels, loc=0)
 
-        ax.text(4, 0.3, r'$f=$' + f' {fixedfreq:.1f}Hz', fontsize=12)
+        ax.text(3, 0.3, r'$f=$' + f' {fixedfreq:.1f}Hz', fontsize=12)
 
         # the_labels = ['a', 'b', 'c', 'd']
-        ax.legend(labels=the_labels)
+        ax.legend(labels=the_labels, handlelength=3)
         ax.set_xlabel(r'$S(f, t)$')
         ax.grid(axis='both')
         ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5))

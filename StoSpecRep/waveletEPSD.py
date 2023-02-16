@@ -11,6 +11,10 @@ from .console import console
 from .SpecRepMethod import SRM_formula
 from cycler import cycler
 import matplotlib as mpl
+import matplotlib.lines as mlines
+from itertools import cycle
+
+
 
 WaveletBundle = namedtuple('WaveletBundle', ['EPSD_ensemble_mean', 'freqs', 't_axis', 'EPSD_ensemble_all'])
 
@@ -253,7 +257,7 @@ class CWTx():
         for time in time_range:
             Sft_by_time[f't{time}'] = external_EPSDbundle.EPSD_ensemble_all[fixedFreqIndex, :, int(time * self.fs)]
             ground_truth.append(self._pwr_coef[fixedFreqIndex, int(time * self.fs)])
-            the_labels.append(f't={time}')
+            the_labels.append(r'$t$' + f' ={time:.1f}')
 
         selected_Swt = pd.DataFrame.from_dict(Sft_by_time)
 
@@ -262,22 +266,37 @@ class CWTx():
            bw_adjust=2,
            legend=True,
            linewidth=1.5,
-           color='blue')
+           color='blue',
+           ax=ax)
 
+        legend = ax.get_legend()
+        handles_sns = legend.legendHandles
+
+        # set the same color for gt vlines
+        line_styles = plt.rcParams['axes.prop_cycle'].by_key()['linestyle']
+        line_styles.reverse()
+        line_styles_cycles = cycle(line_styles) 
+
+        for gt in ground_truth:
+            ax.axvline(x=gt, ymin=0, ymax=1, linestyle=next(line_styles_cycles), linewidth=1, color='purple')
+
+        # # set up the legend marker for gt lines
+        target_line = mlines.Line2D([], [], color='purple', linestyle=next(line_styles_cycles),
+                                    label='target')
+        # # append the lebel for the target artist
+        the_labels.append('target')
+
+        # ''' only for getting the legend in the plot '''
+
+        # ax.legend(handles=[*handles_sns, target_line], labels=the_labels, loc=0)
+
+        ax.text(4, 0.3, r'$f=$' + f' {fixedfreq:.1f}Hz', fontsize=12)
+
+        # the_labels = ['a', 'b', 'c', 'd']
+        ax.legend(labels=the_labels)
         ax.set_xlabel(r'$S(f, t)$')
         ax.grid(axis='both')
         ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5))
-
-        # ''' only for getting the legend in the plot '''
-        # no color
-        ground_truth.reverse()
-        for gt in ground_truth:
-            ax.axvline(x=gt, ymin=0, ymax=1, linestyle='-', linewidth=1, color='purple')
-        
-        the_labels = []
-        for time in time_range:
-            the_labels.append(r'$t$' + f'={time:.1f}')
-        ax.legend(labels=the_labels, loc=0)
 
 
 

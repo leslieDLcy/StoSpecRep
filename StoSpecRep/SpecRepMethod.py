@@ -16,22 +16,6 @@ from .utils import EPSD_show
 # np.random.seed(9527)
 
 
-
-"""
-Note:
-Months ago, we first defined a 'SRM' class which turns out can only be used with 
-spectrogram obtained by STFT, but not with scalogram obtained by Wavelet Transform.
-The reason is the shape of EPSD estimates, STFT give very small shape, eg. (57, 129)
-which needs to be interpolated in spectrum to further generate sample realizations.
-
-But Wavelet Transform can give a large Swt shape such that we don't need to interpolate anymore.
-Therefore, it just needs a `SRM_formulat` function (see below).
-"""
-
-
-
-
-
     # alright, let's write up a general function that takes (Stw, w, t)
  
 def SRM_formula(Stw, f_vec, t_vec):

@@ -1,5 +1,8 @@
-import numpy as np
+"""
+A quick way to formulate a Kanai-Tajimi model
+"""
 
+import numpy as np
 
 class KT_model:
 
@@ -7,8 +10,6 @@ class KT_model:
         self.wg = wg
         self.zzeta = zzeta
         self.S0 = S0
-
-
 
 
 def parameterize_KT_model(w, wg=5 * np.pi, zzeta = 0.63, S0= 0.011):

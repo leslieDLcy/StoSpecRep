@@ -159,26 +159,40 @@ class CWTx():
         """
 
         if external_EPSDbundle is None:
-            fig = plt.figure(figsize=(8, 8))
+            fig = plt.figure(figsize=(10, 10))
             ax = plt.axes(projection='3d')
+            ax.set_box_aspect(aspect=(8, 8, 4), zoom=1)
             X, Y = np.meshgrid(self.t_axis, self._freqs)
             Z = self._pwr_coef
+
+            mappable = plt.cm.ScalarMappable(cmap='coolwarm')
+            mappable.set_array(Z)
+
             # a workaround to set up the range
             Z = np.where((X > x_low) & (X < x_high), Z, None)
             Z = np.where((Y > y_low) & (Y < y_high), Z, None)
+
             ax.plot_surface(X, Y, Z, cmap='coolwarm')
             ax.set_xlabel('Time (s)')
             ax.set_ylabel('Frequency (Hz)')
             ax.zaxis.set_rotate_label(False)  # disable automatic rotation
-            ax.set_zlabel('PSD', rotation=270)
+            ax.set_zlabel(r'$S(f, t)$', rotation=270)
             ax.set_xlim3d(left=x_low, right=x_high)
             ax.set_ylim(bottom=y_low, top=y_high)
+            # plt.colorbar(mappable, ax=ax, shrink=0.5)
+            plt.tight_layout()
         else:
             print('Plotting an exteranl EPSD bundle')
-            fig = plt.figure(figsize=(8, 8))
+            fig = plt.figure(figsize=(12, 12))
             ax = plt.axes(projection='3d')
+            ax.set_box_aspect(aspect=(8, 8, 4), zoom=1)
+
             X, Y = np.meshgrid(external_EPSDbundle[2], external_EPSDbundle[1])
             Z = external_EPSDbundle[0]
+
+            mappable = plt.cm.ScalarMappable(cmap='coolwarm')
+            mappable.set_array(Z)
+
             # a workaround to set up the range
             Z = np.where((X > x_low) & (X < x_high), Z, None)
             Z = np.where((Y > y_low) & (Y < y_high), Z, None)
@@ -186,10 +200,11 @@ class CWTx():
             ax.set_xlabel('Time (s)')
             ax.set_ylabel('Frequency (Hz)')
             ax.zaxis.set_rotate_label(False)  # disable automatic rotation
-            ax.set_zlabel('PSD', rotation=270)
-            # ax.set_zlabel('PSD')
+            ax.set_zlabel(r'$S(f, t)$', rotation=270)
             ax.set_xlim3d(left=x_low, right=x_high)
             ax.set_ylim(bottom=y_low, top=y_high)
+            # plt.colorbar(mappable, ax=ax, shrink=0.5)
+            plt.tight_layout()
 
 
 
@@ -298,6 +313,7 @@ class CWTx():
         # the_labels = ['a', 'b', 'c', 'd']
         ax.legend(labels=the_labels, handlelength=3)
         ax.set_xlabel(r'$S(f, t)$')
+        ax.set_ylabel('Probability density')
         ax.grid(axis='both')
         ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5))
 

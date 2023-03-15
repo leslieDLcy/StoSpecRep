@@ -1,6 +1,6 @@
 # StoSpecRep
 
-Spectral representation of stochastic processes
+Spectral representation for stochastic processes
 
 ## Introduction
 

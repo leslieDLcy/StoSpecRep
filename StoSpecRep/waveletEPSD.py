@@ -159,20 +159,20 @@ class CWTx():
         """
 
         if external_EPSDbundle is None:
-            fig = plt.figure(figsize=(10, 10))
+            fig = plt.figure(figsize=(12, 12))
             ax = plt.axes(projection='3d')
             ax.set_box_aspect(aspect=(8, 8, 4), zoom=1)
             X, Y = np.meshgrid(self.t_axis, self._freqs)
             Z = self._pwr_coef
 
-            mappable = plt.cm.ScalarMappable(cmap='coolwarm')
+            mappable = plt.cm.ScalarMappable(cmap='viridis')
             mappable.set_array(Z)
 
             # a workaround to set up the range
             Z = np.where((X > x_low) & (X < x_high), Z, None)
             Z = np.where((Y > y_low) & (Y < y_high), Z, None)
 
-            ax.plot_surface(X, Y, Z, cmap='coolwarm')
+            ax.plot_surface(X, Y, Z, cmap='viridis')
             ax.set_xlabel('Time (s)')
             ax.set_ylabel('Frequency (Hz)')
             ax.zaxis.set_rotate_label(False)  # disable automatic rotation
@@ -183,7 +183,7 @@ class CWTx():
             plt.tight_layout()
         else:
             print('Plotting an exteranl EPSD bundle')
-            fig = plt.figure(figsize=(12, 12))
+            fig = plt.figure(figsize=(14, 14))
             ax = plt.axes(projection='3d')
             ax.set_box_aspect(aspect=(8, 8, 4), zoom=1)
 
@@ -196,7 +196,7 @@ class CWTx():
             # a workaround to set up the range
             Z = np.where((X > x_low) & (X < x_high), Z, None)
             Z = np.where((Y > y_low) & (Y < y_high), Z, None)
-            ax.plot_surface(X, Y, Z, cmap='coolwarm')
+            ax.plot_surface(X, Y, Z, cmap='viridis')
             ax.set_xlabel('Time (s)')
             ax.set_ylabel('Frequency (Hz)')
             ax.zaxis.set_rotate_label(False)  # disable automatic rotation
@@ -204,7 +204,6 @@ class CWTx():
             ax.set_xlim3d(left=x_low, right=x_high)
             ax.set_ylim(bottom=y_low, top=y_high)
             # plt.colorbar(mappable, ax=ax, shrink=0.5)
-            plt.tight_layout()
 
 
 

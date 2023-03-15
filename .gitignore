@@ -89,5 +89,5 @@ target/
 # Mypy cache
 .mypy_cache/
 
-
+/personal_docs/
 /test/EPSD_review_of_ESMsignal.ipynb

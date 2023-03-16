@@ -46,7 +46,7 @@ A convenience module mainly for:
 - [x] Implementing **S**petral **R**epresentation **M**ethod given EPSD;
 - [x] Estimating EPSD or PSD from realizations via [wavelet transform](https://en.wikipedia.org/wiki/Wavelet_transform);
 
-*A practical introduction to Wavelet transform (morlet) can be found in xx*
+*A practical introduction to Wavelet transform (morlet) can be found in [Morlet wavelet basics](notebooks/IntroductionMorletWaveletBasics.ipynb)*
 
 ## An example with Kanai-Tajimi model
 

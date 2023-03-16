@@ -6,9 +6,9 @@ Spectral representation for stochastic processes
 
 Stochastic processes are widely adopted in many domains to deal with problems which are stochastic in nature and involve strong nonlinearity, nonstationarity, and uncertain system problems. Capturing the nonstationarity plays a central role in characterising many environmental processes (e.g. earthquake ground motion or wind) and realistically reflect the response process of engineering structures under stochastic excitations.
 
-> For interested readers, a technical definition can be found in the collapsed section below
+> *For interested readers, a technical definition can be found in the collapsed section below*
 
-<details><summary>evolutionary power spectral density</summary>
+<details><summary>evolutionary power spectral density(EPSD)</summary>
 <p>
 In this section, a brief review of the theory of the spectral representation of stochastic processes (stationary and non-stationary) is outlined. In particular, focus is on power spectral estimation and simulation of the corresponding processes.
 A general non-stationary random process, with respect to a family of oscillatory functions, can be represented in the form:

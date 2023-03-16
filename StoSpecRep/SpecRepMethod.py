@@ -16,7 +16,7 @@ from .utils import EPSD_show
 # np.random.seed(9527)
 
 
-    # alright, let's write up a general function that takes (Stw, w, t)
+# alright, let's write up a general function that takes (Stw, w, t)
  
 def SRM_formula(Stw, f_vec, t_vec):
     """ Redo the SRM based on a computed wavelet EPSD 

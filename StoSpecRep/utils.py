@@ -7,10 +7,9 @@ from scipy.interpolate import griddata
 from collections import namedtuple
 
 def EPSD_show(Pxx, freqs, t_bins, format, title_name='the estimated spectra'):
-        """Given the 3 elements returned by plt.specgram
-        ie, (Pxx, freqs, t_bins)
-        ----
-        Change the colorbar
+        """ Plot the EPSD
+        
+        Given the 3 elements returned by `plt.specgram` -> (Pxx, freqs, t_bins)        
         """
         plt.figure(figsize=(6,4))
         if format=='2d':
@@ -59,12 +58,17 @@ def specgram3d(y, fs=200, title=None):
 
 
 def simple_interpol2d(Pxx, freqs, t_bins):
-    """Since the shape of estimated Swt spectra is smaller than 
+    """
+    Note
+    ----
+    Since the shape of estimated Swt spectra is smaller than 
     the one used to do SRM simulation, we interpolate it.
-    TODO:
+    
+    TODO
     -----
     The Swt should be interpolated to a given shape by (N1, duration * Fs)
     """
+
     # Use the same variables names as the Numpy example
     # Points, values, and then new coordinates
     points = list(itertools.product(t_bins, freqs))

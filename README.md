@@ -51,12 +51,14 @@ pip install stospecrep
 ## Example usages
 
 1. chirp signal
-bla bla ...
+
+An illustrating example of a linear chirp signal whose frequency spectrum is changing with time.
+![alt text](visualizations/linearChirp_EPSD.png "linear chirp signal EPSD")
 
 
 2. El centro earthquake
-bla bla ...
 
+The 'hello world' example of an earthquake recording, showing its estimated evolutionary power spectrum. Many spectral results based on this example can be found in the literature. 
 
 
 ## References

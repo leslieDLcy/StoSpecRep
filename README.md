@@ -1,6 +1,6 @@
 # StoSpecRep
 
-Spectral representation for stochastic processes
+**Spe**ctral **rep**resentation for **sto**chastic processes
 
 ## Introduction
 
@@ -8,7 +8,7 @@ Stochastic processes are widely adopted in many domains to deal with problems wh
 
 > *For interested readers, a technical definition can be found in the collapsed section below*
 
-<details><summary>evolutionary power spectral density(EPSD)</summary>
+<details><summary>formulation: evolutionary power spectral density(EPSD)</summary>
 <p>
 In this section, a brief review of the theory of the spectral representation of stochastic processes (stationary and non-stationary) is outlined. In particular, focus is on power spectral estimation and simulation of the corresponding processes.
 A general non-stationary random process, with respect to a family of oscillatory functions, can be represented in the form:
@@ -40,16 +40,31 @@ where $x^{(i)}(t)$ is a sample simulation, $\Phi^{(i)}$ is the set of independen
 ```bash
 pip install stospecrep
 ```
-## Functionality
-A convenience module mainly for:
+## *functionality*
+
 - [x] Formulating EPSD models;
 - [x] Implementing **S**petral **R**epresentation **M**ethod given EPSD;
 - [x] Estimating EPSD or PSD from realizations via [wavelet transform](https://en.wikipedia.org/wiki/Wavelet_transform);
 
 *A practical introduction to Wavelet transform (morlet) can be found in [Morlet wavelet basics](notebooks/IntroductionMorletWaveletBasics.ipynb)*
 
-## An example with Kanai-Tajimi model
+## Example usages
+
+1. chirp signal
+bla bla ...
+
+
+2. El centro earthquake
+bla bla ...
+
 
 
 ## References
-
+```markdown
+@article{chen2023physics,
+  title={A physics-informed Bayesian framework for characterizing ground motion process in the presence of missing data},
+  author={Chen, Yu and Patelli, Edoardo and Edwards, Benjamin and Beer, Michael},
+  journal={Earthquake Engineering \& Structural Dynamics},
+  publisher={Wiley Online Library}
+}
+```

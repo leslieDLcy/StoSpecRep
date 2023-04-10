@@ -104,7 +104,7 @@ class CWTx():
             EPSD_pwr_coef_ensemble_mean = np.mean(EPSD_pwr_coef_all, axis=1)
             return WaveletBundle(EPSD_pwr_coef_ensemble_mean, freqs, self.t_axis, EPSD_pwr_coef_all)
         else:
-            print('Computing based on the recording')
+            print('Computing on the given signal')
             coef, self._freqs = pywt.cwt(
                         data=self.signal, 
                         scales=self._proposed_scales, 
@@ -204,6 +204,59 @@ class CWTx():
             ax.set_xlim3d(left=x_low, right=x_high)
             ax.set_ylim(bottom=y_low, top=y_high)
             # plt.colorbar(mappable, ax=ax, shrink=0.5)
+
+
+
+
+    def plot_3dEPSD_defaultRange(self, external_EPSDbundle=None):
+        """ Plot the computed EPSD by wavelet transform of a certain range 
+        
+        Parameters
+        ----------
+        x_low: int
+            the lower limit of the time axis;
+        y_low: int
+            the lower limit of the frequency axis;=
+        """
+
+        if external_EPSDbundle is None:
+            fig = plt.figure() # set figure size here
+            ax = plt.axes(projection='3d')
+            # ax.set_box_aspect(aspect=(8, 8, 4), zoom=1)  # set figure aspect ratio here
+            X, Y = np.meshgrid(self.t_axis, self._freqs)
+            Z = self._pwr_coef
+
+            mappable = plt.cm.ScalarMappable(cmap='bwr')
+            mappable.set_array(Z)
+
+            ax.plot_surface(X, Y, Z, cmap='bwr')
+            ax.set_xlabel('Time (s)')
+            ax.set_ylabel('Frequency (Hz)')
+            ax.zaxis.set_rotate_label(False)  # disable automatic rotation
+            ax.set_zlabel(r'$S(f, t)$', rotation=270)
+            # plt.colorbar(mappable, ax=ax, shrink=0.5)
+            plt.tight_layout()
+        else:
+            print('Plotting an exteranl EPSD bundle')
+            fig = plt.figure()
+            ax = plt.axes(projection='3d')
+            ax.set_box_aspect(aspect=(8, 8, 4), zoom=1)
+
+            X, Y = np.meshgrid(external_EPSDbundle[2], external_EPSDbundle[1])
+            Z = external_EPSDbundle[0]
+
+            mappable = plt.cm.ScalarMappable(cmap='coolwarm')
+            mappable.set_array(Z)
+
+            ax.plot_surface(X, Y, Z, cmap='bwr')
+            ax.set_xlabel('Time (s)')
+            ax.set_ylabel('Frequency (Hz)')
+            ax.zaxis.set_rotate_label(False)  # disable automatic rotation
+            ax.set_zlabel(r'$S(f, t)$', rotation=270)
+            # plt.colorbar(mappable, ax=ax, shrink=0.5)
+
+
+
 
 
 

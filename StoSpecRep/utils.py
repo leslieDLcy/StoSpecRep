@@ -96,3 +96,18 @@ def simple_interpol2d(Pxx, freqs, t_bins):
 # as an effort to standarize the uses of EPSD from STFT and wavelet transform
 
 SpecBundle = namedtuple('SpecBundle', ['epsd', 'freq', 't_axis'])
+
+
+
+def save2Vis(figname):
+    """ a shortcut function to save plot to visualization dir 
+    
+    Note
+    ----
+    
+    We simply assume that every repo will have a 'visulizations' 
+    dir under the root directory
+    """
+    
+    axe = plt.gca()
+    plt.savefig(f'../visualizations/{figname}.png', format='png', dpi=300, bbox_inches='tight')

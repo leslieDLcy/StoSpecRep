@@ -90,4 +90,6 @@ target/
 .mypy_cache/
 
 personal_docs/
-/test/EPSD_review_of_ESMsignal.ipynb
+/Examples/EPSD_review_of_ESMsignal.ipynb
+/Examples/personal_backup_steps.ipynb
+/Examples/illustration.ipynb

@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Stochastic processes are widely adopted in many domains to deal with problems which are stochastic in nature and involve strong nonlinearity, nonstationarity, and uncertain system problems. Capturing the nonstationarity plays a central role in characterising many environmental processes (e.g. earthquake ground motion or wind) and realistically reflect the response process of engineering structures under stochastic excitations.
+Stochastic processes are widely adopted in many domains to deal with problems which are stochastic in nature and involve strong nonlinearity, nonstationarity, and uncertain system problems[^1]. Capturing the nonstationarity plays a central role in characterising many environmental processes (e.g. earthquake ground motion or wind) and realistically reflect the response process of engineering structures under stochastic excitations[^2].
 
 > *For interested readers, a technical definition can be found in the collapsed section below*
 
@@ -77,3 +77,6 @@ The 'hello world' example of an earthquake recording, showing its estimated evol
   publisher={Wiley Online Library}
 }
 ```
+
+[^1]: Priestley. Evolutionary Spectra and Non‐Stationary Processes.
+[^2]: Spanos etc. Evolutionary Spectra Estimation Using Wavelets.

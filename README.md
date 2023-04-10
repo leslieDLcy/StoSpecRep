@@ -44,7 +44,7 @@ pip install stospecrep
 
 - [x] Formulating EPSD models;
 - [x] Implementing **S**petral **R**epresentation **M**ethod given EPSD;
-- [x] Estimating EPSD or PSD from realizations via [wavelet transform](https://en.wikipedia.org/wiki/Wavelet_transform);
+- [x] Estimating EPSD or PSD from realizations via [wavelet transform](notebooks/IntroductionMorletWaveletBasics.ipynb);
 
 
 ## Example usages

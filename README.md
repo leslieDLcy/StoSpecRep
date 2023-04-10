@@ -46,7 +46,6 @@ pip install stospecrep
 - [x] Implementing **S**petral **R**epresentation **M**ethod given EPSD;
 - [x] Estimating EPSD or PSD from realizations via [wavelet transform](https://en.wikipedia.org/wiki/Wavelet_transform);
 
-*A practical introduction to Wavelet transform (morlet) can be found in [Morlet wavelet basics](notebooks/IntroductionMorletWaveletBasics.ipynb)*
 
 ## Example usages
 
@@ -59,6 +58,14 @@ An illustrating example of a linear chirp signal whose frequency spectrum is cha
 2. El centro earthquake
 
 The 'hello world' example of an earthquake recording, showing its estimated evolutionary power spectrum. Many spectral results based on this example can be found in the literature. 
+![alt text](visualizations/elcentro_EPSD.png "el centro eq EPSD")
+
+
+## Morelet wavelet introduction
+
+*A practical introduction to Wavelet transform (morlet) can be found in [Morlet wavelet basics](notebooks/IntroductionMorletWaveletBasics.ipynb)*
+![alt text](visualizations/morletWavelet_illustration.png "introduction of Morelet wavelet")
+
 
 
 ## References

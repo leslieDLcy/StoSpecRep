@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 import pandas as pd
@@ -6,55 +6,55 @@ from matplotlib import mlab
 from scipy.interpolate import griddata
 from collections import namedtuple
 
+
 def EPSD_show(Pxx, freqs, t_bins, format, title_name='the estimated spectra'):
-        """ Plot the EPSD
-        
-        Given the 3 elements returned by `plt.specgram` -> (Pxx, freqs, t_bins)        
-        """
-        plt.figure(figsize=(6,4))
-        if format=='2d':
-            plt.pcolormesh(t_bins, freqs, Pxx, 
-                    vmin=0, 
-                    vmax=np.max(Pxx), 
-                    shading='nearest', 
-                    cmap='BuPu')
-            plt.colorbar()
-            plt.ylim([0, 15])
-            plt.xlabel('Time (s)')
-            plt.ylabel('Frequency (hz)')
-            # plt.grid()
-            plt.title(f'{title_name}')
-        elif format=='3d':
-            fig = plt.figure(figsize=(8,8))    
-            ax = plt.axes(projection='3d')
-            X, Y = np.meshgrid(t_bins, freqs)
-            Z = Pxx
-            ax.plot_surface(X, Y, Z, cmap='jet')
-            ax.set_xlabel('Time (s)')
-            ax.set_ylabel('Frequency (hz)')
-            ax.set_zlabel('PSD')
-            ax.set_title(f'{title_name}')
+    """ Plot the EPSD
+
+    Given the 3 elements returned by `plt.specgram` -> (Pxx, freqs, t_bins)        
+    """
+    plt.figure(figsize=(6, 4))
+    if format == '2d':
+        plt.pcolormesh(t_bins, freqs, Pxx,
+                       vmin=0,
+                       vmax=np.max(Pxx),
+                       shading='nearest',
+                       cmap='BuPu')
+        plt.colorbar()
+        plt.ylim([0, 15])
+        plt.xlabel('Time (s)')
+        plt.ylabel('Frequency (hz)')
+        # plt.grid()
+        plt.title(f'{title_name}')
+    elif format == '3d':
+        fig = plt.figure(figsize=(8, 8))
+        ax = plt.axes(projection='3d')
+        X, Y = np.meshgrid(t_bins, freqs)
+        Z = Pxx
+        ax.plot_surface(X, Y, Z, cmap='jet')
+        ax.set_xlabel('Time (s)')
+        ax.set_ylabel('Frequency (hz)')
+        ax.set_zlabel('PSD')
+        ax.set_title(f'{title_name}')
 
 
 def specgram3d(y, fs=200, title=None):
-        """
-        This func is borrowed elsewhere
-        """
-        ax = plt.axes(projection='3d')
-        ax.set_title(title, loc='center', wrap=True)
-        spec, freqs, t = mlab.specgram(y, Fs=fs, NFFT=256, noverlap=128)
-        X, Y, Z = t[None, :], freqs[:, None], spec
-        ax.plot_surface(X, Y, Z, cmap='viridis')
-        ax.set_xlabel('time (s)')
-        ax.set_ylabel('frequencies (Hz)')
-        ax.set_zlabel('PSD')
+    """ This func is borrowed elsewhere """
+    
+    ax = plt.axes(projection='3d')
+    ax.set_title(title, loc='center', wrap=True)
+    spec, freqs, t = mlab.specgram(y, Fs=fs, NFFT=256, noverlap=128)
+    X, Y, Z = t[None, :], freqs[:, None], spec
+    ax.plot_surface(X, Y, Z, cmap='viridis')
+    ax.set_xlabel('time (s)')
+    ax.set_ylabel('frequencies (Hz)')
+    ax.set_zlabel('PSD')
 #         ax.set_zlim([0, 0.015])
 #         ax.set_ylim([0, 10])
 #         ax.set_xlim([0, 14])
 #         ax.view_init(20, 220)
-        ax.invert_xaxis()
+    ax.invert_xaxis()
 #         ax.invert_yaxis()
-        return X, Y, Z
+    return X, Y, Z
 
 
 def simple_interpol2d(Pxx, freqs, t_bins):
@@ -63,7 +63,7 @@ def simple_interpol2d(Pxx, freqs, t_bins):
     ----
     Since the shape of estimated Swt spectra is smaller than 
     the one used to do SRM simulation, we interpolate it.
-    
+
     TODO
     -----
     The Swt should be interpolated to a given shape by (N1, duration * Fs)
@@ -72,7 +72,7 @@ def simple_interpol2d(Pxx, freqs, t_bins):
     # Use the same variables names as the Numpy example
     # Points, values, and then new coordinates
     points = list(itertools.product(t_bins, freqs))
-    
+
     sample_df = pd.DataFrame()
     sample_df['X'] = [xy[0] for xy in points]
     sample_df['Y'] = [xy[1] for xy in points]
@@ -92,22 +92,19 @@ def simple_interpol2d(Pxx, freqs, t_bins):
     return grid_z0
 
 
-
-# as an effort to standarize the uses of EPSD from STFT and wavelet transform
-
+#  as an effort to standarize the uses of EPSD from STFT and wavelet transform
 SpecBundle = namedtuple('SpecBundle', ['epsd', 'freq', 't_axis'])
-
 
 
 def save2Vis(figname):
     """ a shortcut function to save plot to visualization dir 
-    
+
     Note
     ----
-    
     We simply assume that every repo will have a 'visulizations' 
     dir under the root directory
     """
-    
+
     axe = plt.gca()
-    plt.savefig(f'../visualizations/{figname}.png', format='png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'../visualizations/{figname}.png',
+                format='png', dpi=300, bbox_inches='tight')

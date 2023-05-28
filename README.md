@@ -40,11 +40,12 @@ where $x^{(i)}(t)$ is a sample simulation, $\Phi^{(i)}$ is the set of independen
 ```bash
 pip install stospecrep
 ```
+
 ## *functionality*
 
-- [x] Formulating EPSD models;
-- [x] Implementing **S**petral **R**epresentation **M**ethod given EPSD;
 - [x] Estimating EPSD or PSD from realizations via [wavelet transform](notebooks/IntroductionMorletWaveletBasics.ipynb);
+- [x] Implementing **S**petral **R**epresentation **M**ethod given EPSD;
+
 
 
 ## Example usages

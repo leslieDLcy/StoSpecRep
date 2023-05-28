@@ -1,8 +1,5 @@
-
-# implementation for the Kanai Tajimi model and also
 # implementation for Spectral Representation method by Shinozuka
 
-# from optparse import Values
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -11,13 +8,8 @@ import pandas as pd
 from scipy import interpolate
 from scipy.interpolate import griddata
 from .utils import EPSD_show
-
-# from KT_model import parameterized_KT_model, Envelop_tfunc1, nonsta_model
-# np.random.seed(9527)
-
-
-# alright, let's write up a general function that takes (Stw, w, t)
  
+
 def SRM_formula(Stw, f_vec, t_vec):
     """ Redo the SRM based on a computed wavelet EPSD 
     
@@ -154,9 +146,6 @@ class SRM:
         return simulation
 
 
-
-
-
     @staticmethod
     def getSww_from_a_model(model, w_axis):
         return model(w_axis)
@@ -245,14 +234,6 @@ class SRM:
 
 
 
-
-
-
-
-
-
-    ##### I've forgotten what below are #####
-
     def SpecRepsentation3(self, Sww, t_bins, plot='y'):
         '''
         For now, this func received a spectra as argument,
@@ -329,9 +310,6 @@ class SRM:
             After: (N1, duration * Fs) -> (1024, 2500)
         '''
 
-
-
-
         # xx, yy = np.meshgrid(t_bins, freqs)
         # z = Sww
         # f = interpolate.interp2d(t_bins, freqs, z, 
@@ -353,53 +331,6 @@ class SRM:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # set up a simple function to plot the reference spectrum
-# def plot_reference_spectrum(w, wu):
-#     """
-#     show the reference spectrum of the random process, which is the psd function
-#     """
-#     plt.plot(w, parameterize_KT_model(w, wg=5 * np.pi, zzeta = 0.63, S0= 0.011), color='red', linewidth=2, label='the reference spectrum of the process')
-#     plt.xlim([0, wu])
-#     plt.legend()
-
-"""
-calculate the upper limit of time step
-i.e. Delta t <= 2*pi / 2*wu
-time precision -> sampling rate
-therefore, the sampling interval `dt` should be less than `t_upper_limit`
-the less `dt` then the higher `Fs`
-"""
-
-
-
-# the relation between `Fs` and `wu`
 
 
 

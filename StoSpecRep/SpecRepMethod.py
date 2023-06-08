@@ -1,4 +1,17 @@
-# implementation for Spectral Representation method by Shinozuka
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+""" implementation for Spectral Representation method by Shinozuka """
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -37,13 +50,11 @@ def SRM_formula(Stw, f_vec, t_vec):
 
 
 class SRM:
-    """ From a given spectra (a stationary Sww or a nonstationary Swt,
-    used as PSDF, generate simulations. 
-
-    Note that when given an estimated Swt, we need to interpolate the Swt first.
+    """ From a given spectra (a stationary Sww or a nonstationary Swt, generate simulations. 
 
     Hint:
     ----
+    Note that when given an estimated Swt, we need to interpolate the Swt first.
     An object is characterised by an EPSD (named as Swt) and resulting sample realizations;
     """
 
@@ -65,13 +76,13 @@ class SRM:
         ])
 
     def SpecRepsentation0(self, Sww):
-        '''
-        The SRM fomula which generates sample simulation from given Swt/Sww.
+        ''' The SRM fomula which generates sample simulation from given Swt/Sww.
+        
+        Note
+        ----
         Each call will result in a different realization.
-
         For now, this func received a spectra as an argument,
         which may be obtained from 'getSww_from_a_model' func.
-
         This func is also used in simulations for nonstationary Swt.
         '''
 
@@ -91,8 +102,10 @@ class SRM:
         return simulation
 
     def _SpecRepsentation0(self, Sww, plot=True):
-        '''
-        This is the backup version of function `self.SpecRepsentation0`
+        ''' backup version of function `self.SpecRepsentation0`
+        
+        Note
+        ----
         For now, this func received a spectra as argument,
         which may be obtained from 'getSww_from_a_model' func.
         '''
@@ -122,12 +135,11 @@ class SRM:
         return model(w_axis)
 
     def _interpo_spectra(self, Pxx, freqs, t_bins):
-        """
-        Given Swt estimated by STFT (one-sided), 
-        ie. Pxx, freqs, t_bins, im = ax2.specgram(...)
+        """ Given Swt estimated by STFT (one-sided), ie. Pxx, freqs, t_bins, im = ax2.specgram(...)
 
-        Follow the example procedures;
-        # Points, values, and then new coordinates
+        Note
+        -----
+        Follow the example procedures: Points, values, and then new coordinates
         """
         points = list(itertools.product(t_bins, freqs))
         sample_df = pd.DataFrame()
@@ -157,13 +169,13 @@ class SRM:
     def nonsta_simulation(self, Pxx, freqs, t_bins):
         """ For given estimated spectra, do interpolation first and then do simulation;
 
-        Paramters:
+        Paramters
         ---------
         Pxx, freqs, t_bins: 
         Given the estimated spectra by STFT
 
-        **kwargs :
-        Used to control if showing the estimated spectra in 2d or 3d
+        **kwargs
+            Used to control if showing the estimated spectra in 2d or 3d
         """
         interpolated_Swt = self._interpo_spectra(Pxx, freqs, t_bins)
         x = self.SpecRepsentation0(interpolated_Swt)
@@ -172,14 +184,12 @@ class SRM:
     ''' !!! the high-level func called in the main file '''
 
     def nonsta_esmb_simus(self, Pxx, freqs, t_bins, ensemble_num):
-        """ 
-        The high-level func that generates an ensemble of simulations.
+        """ high-level func that generates an ensemble of simulations.
 
         Steps
         -----
         Interpolate an estimated Swt to the expected shape of a PSDF;
         Then simulate realizations from the interpolated Swt;
-
 
         Hint
         ----
@@ -249,34 +259,6 @@ class SRM:
         w_n = n * delta_w
         A_n = np.sqrt(2 * Sww * delta_w)
         phi_n = np.random.uniform(0, 2 * np.pi, self.N1)
-
-        # # Note that A0=0 or S(w0)=0
-        # sum = 0
-        # if Sww.shape[-1] == self.t_axis_4simu.shape[0]:
-        #     for i in range(1, self.N1):
-        #         sum = sum + A_n[i] * np.cos(w_n[i] * self.t_axis_4simu + phi_n[i])
-        # elif Sww.shape[-1] < self.t_axis_4simu.shape[0]:
-        # assert(t_bins != None)
-
-        # Hint: we will construct a 2D grid
-
-        ''' before: x -> t_axis
-                    y -> w_axis
-            eg. (65, 41)
-        
-            After: (N1, duration * Fs) -> (1024, 2500)
-        '''
-
-        # xx, yy = np.meshgrid(t_bins, freqs)
-        # z = Sww
-        # f = interpolate.interp2d(t_bins, freqs, z,
-        #                          kind='next',
-        #                          bounds_error=False,
-        #                          fill_value='extrapolate')
-
-        # xnew = self.t_axis_4simu
-        # ynew = self.w_axis_4simu
-        # znew = f(xnew, ynew)
 
         points = np.meshgrid(t_bins, freqs)
         values = Sww

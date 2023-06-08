@@ -6,10 +6,8 @@
 
 Stochastic processes are widely adopted in many domains to deal with problems which are stochastic in nature and involve strong nonlinearity, nonstationarity, and uncertain system problems[^1]. Capturing the nonstationarity plays a central role in characterising many environmental processes (e.g. earthquake ground motion or wind) and realistically reflect the response process of engineering structures under stochastic excitations[^2].
 
-> *For interested readers, a technical definition can be found in the collapsed section below*
 
-<details><summary>formulation: evolutionary power spectral density(EPSD)</summary>
-<p>
+## formulation
 In this section, a brief review of the theory of the spectral representation of stochastic processes (stationary and non-stationary) is outlined. In particular, focus is on power spectral estimation and simulation of the corresponding processes.
 A general non-stationary random process, with respect to a family of oscillatory functions, can be represented in the form:
 
@@ -31,9 +29,6 @@ $$x^{(i)}(t) = \sqrt{2} \sum_{n=0}^{N-1} \sqrt{2 S(\omega_{n}, t) \Delta \omega}
 
 where $x^{(i)}(t)$ is a sample simulation, $\Phi^{(i)}$ is the set of independent random phase angles, distributed uniformly over the interval $[0, 2 \pi]$, for the $i$th sample realizations; $N$ and $\Delta{\omega}$ relate to the discretization of the frequency domain.
 
-
-</p>
-</details>
 
 ## Installation
 
@@ -62,7 +57,7 @@ The 'hello world' example of an earthquake recording, showing its estimated evol
 ![alt text](visualizations/elcentro_EPSD.png "el centro eq EPSD")
 
 
-## Morelet wavelet introduction
+## Morlet wavelet introduction
 
 *A practical introduction to Wavelet transform (morlet) can be found in [Morlet wavelet basics](notebooks/IntroductionMorletWaveletBasics.ipynb)*
 ![alt text](visualizations/morletWavelet_illustration.png "introduction of Morelet wavelet")

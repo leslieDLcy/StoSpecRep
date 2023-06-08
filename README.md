@@ -29,7 +29,6 @@ $$x^{(i)}(t) = \sqrt{2} \sum_{n=0}^{N-1} \sqrt{2 S(\omega_{n}, t) \Delta \omega}
 
 where $x^{(i)}(t)$ is a sample simulation, $\Phi^{(i)}$ is the set of independent random phase angles, distributed uniformly over the interval $[0, 2 \pi]$, for the $i$th sample realizations; $N$ and $\Delta{\omega}$ relate to the discretization of the frequency domain.
 
-
 ## Installation
 
 ```bash

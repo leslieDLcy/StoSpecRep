@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='StoSpecRep',
-      version='0.1',
+      version='0.1.0',
       description='Stochastic spectral representation',
       url='https://github.com/leslieDLcy/StoSpecRep.git',
       author='Leslie',
